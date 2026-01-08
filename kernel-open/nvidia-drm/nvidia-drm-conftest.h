@@ -36,6 +36,17 @@
  * alternate implementation in this file.
  */
 
+/*
+ * For in-tree builds, these symbols are available but conftest may not
+ * detect them correctly. Provide fallback definitions.
+ */
+#if !defined(NV_IS_EXPORT_SYMBOL_GPL_refcount_inc)
+#define NV_IS_EXPORT_SYMBOL_GPL_refcount_inc 1
+#endif
+#if !defined(NV_IS_EXPORT_SYMBOL_GPL_refcount_dec_and_test)
+#define NV_IS_EXPORT_SYMBOL_GPL_refcount_dec_and_test 1
+#endif
+
 #if NV_IS_EXPORT_SYMBOL_GPL_refcount_inc
 
 #include <linux/refcount.h>

@@ -14,7 +14,7 @@ NVIDIA_DRM_SOURCES += nvidia-drm/nvidia-drm-linux.c
 
 NVIDIA_DRM_OBJECTS = $(patsubst %.c,%.o,$(NVIDIA_DRM_SOURCES))
 
-obj-m += nvidia-drm.o
+obj-y += nvidia-drm.o
 nvidia-drm-y := $(NVIDIA_DRM_OBJECTS)
 
 NVIDIA_DRM_KO = nvidia-drm/nvidia-drm.ko

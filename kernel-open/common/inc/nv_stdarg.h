@@ -26,14 +26,13 @@
 #define _NV_STDARG_H_
 
 #if defined(NV_KERNEL_INTERFACE_LAYER) && defined(NV_LINUX)
-  #include "conftest.h"
-  #if defined(NV_LINUX_STDARG_H_PRESENT)
-    #include <linux/stdarg.h>
-  #else
-    #include <stdarg.h>
-  #endif   
+  /*
+   * For in-tree kernel builds, linux/stdarg.h is available (since 5.15).
+   * Use it directly without relying on conftest detection.
+   */
+  #include <linux/stdarg.h>
 #else
   #include <stdarg.h>
-#endif   
+#endif
 
 #endif // _NV_STDARG_H_

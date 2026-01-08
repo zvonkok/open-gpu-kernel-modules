@@ -9,7 +9,7 @@
 include $(src)/nvidia/nvidia-sources.Kbuild
 NVIDIA_OBJECTS = $(patsubst %.c,%.o,$(NVIDIA_SOURCES))
 
-obj-m += nvidia.o
+obj-y += nvidia.o
 nvidia-y := $(NVIDIA_OBJECTS)
 
 NVIDIA_KO = nvidia/nvidia.ko
@@ -92,7 +92,7 @@ clean-files += $(NV_COMPILER_VERSION_HEADER)
 
 NVIDIA_INTERFACE := nvidia/nv-interface.o
 
-# Linux kernel v5.12 and later looks at "always-y", Linux kernel versions 
+# Linux kernel v5.12 and later looks at "always-y", Linux kernel versions
 # before v5.6 looks at "always"; kernel versions between v5.12 and v5.6
 # look at both.
 

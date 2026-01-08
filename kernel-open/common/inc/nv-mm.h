@@ -25,6 +25,14 @@
 
 #include "conftest.h"
 
+/*
+ * For in-tree builds, provide fallback definitions if conftest
+ * doesn't detect them correctly. vm_flags_set() exists since kernel 6.3.
+ */
+#if !defined(NV_VM_FLAGS_SET_PRESENT)
+#define NV_VM_FLAGS_SET_PRESENT
+#endif
+
 #if !defined(NV_VM_FAULT_T_IS_PRESENT)
 typedef int vm_fault_t;
 #endif

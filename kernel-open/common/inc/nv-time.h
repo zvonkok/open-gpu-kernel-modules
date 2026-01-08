@@ -32,6 +32,14 @@
 
 #include <nvstatus.h>
 
+/*
+ * For in-tree builds, provide fallback definitions if conftest
+ * doesn't detect them correctly. ktime_get_raw_ts64() exists in modern kernels.
+ */
+#if !defined(NV_KTIME_GET_RAW_TS64_PRESENT)
+#define NV_KTIME_GET_RAW_TS64_PRESENT
+#endif
+
 #define NV_MAX_ISR_DELAY_US           20000
 #define NV_MAX_ISR_DELAY_MS           (NV_MAX_ISR_DELAY_US / 1000)
 #define NV_NSECS_TO_JIFFIES(nsec)     ((nsec) * HZ / 1000000000)

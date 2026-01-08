@@ -19,6 +19,11 @@
 NV_BUILD_TYPE ?= release
 
 #
+# In-tree kernel build - this driver is built as part of the kernel tree
+#
+NV_INTREE_BUILD := 1
+
+#
 # Utility macro ASSIGN_PER_OBJ_CFLAGS: to control CFLAGS on a
 # per-object basis, Kbuild honors the 'CFLAGS_$(object)' variable.
 # E.g., "CFLAGS_nv.o" for CFLAGS that are specific to nv.o. Use this
@@ -70,6 +75,8 @@ endif
 quiet_cmd_symlink = SYMLINK $@
  cmd_symlink = ln -sf $(abspath $<) $@
 
+# Default modules for in-tree builds (when NV_KERNEL_MODULES not set by caller)
+NV_KERNEL_MODULES ?= nvidia nvidia-modeset nvidia-drm nvidia-uvm nvidia-peermem
 
 $(foreach _module, $(NV_KERNEL_MODULES), \
  $(eval include $(src)/$(_module)/$(_module).Kbuild))
@@ -77,8 +84,10 @@ $(foreach _module, $(NV_KERNEL_MODULES), \
 
 ccflags-y += -I$(src)/common/inc
 ccflags-y += -I$(src)
+# Include path for generated conftest headers ($(obj)/conftest/*.h)
+ccflags-y += -I$(obj)
 ccflags-y += -Wall $(DEFINES) $(INCLUDES) -Wno-cast-qual -Wno-format-extra-args
-ccflags-y += -D__KERNEL__ -DMODULE -DNVRM
+ccflags-y += -D__KERNEL__ -DNVRM
 ccflags-y += -DNV_VERSION_STRING=\"590.48.01\"
 
 # Include and link Tegra out-of-tree modules.
@@ -138,6 +147,7 @@ ccflags-y += -DNV_UVM_ENABLE
 ccflags-y += $(call cc-option,-Werror=undef,)
 ccflags-y += -DNV_SPECTRE_V2=$(NV_SPECTRE_V2)
 ccflags-y += -DNV_KERNEL_INTERFACE_LAYER
+ccflags-y += -DNV_LINUX
 
 #
 # Detect SGI UV systems and apply system-specific optimizations.
@@ -173,6 +183,26 @@ endif
 
 CC ?= cc
 LD ?= ld
+
+#
+# For in-tree kernel builds, derive NV_KERNEL_SOURCES and NV_KERNEL_OUTPUT
+# from the kernel's Kbuild variables (srctree and objtree).
+#
+ifndef NV_KERNEL_SOURCES
+ ifdef srctree
+  NV_KERNEL_SOURCES := $(srctree)
+ endif
+endif
+
+ifndef NV_KERNEL_OUTPUT
+ ifdef objtree
+  NV_KERNEL_OUTPUT := $(objtree)
+ else ifdef KBUILD_OUTPUT
+  NV_KERNEL_OUTPUT := $(KBUILD_OUTPUT)
+ else
+  NV_KERNEL_OUTPUT := $(NV_KERNEL_SOURCES)
+ endif
+endif
 
 NV_CONFTEST_SCRIPT := $(src)/conftest.sh
 NV_CONFTEST_HEADER := $(obj)/conftest/headers.h
@@ -282,8 +312,9 @@ BUILD_SANITY_CHECKS = \
  dom0_sanity_check \
  xen_sanity_check \
  preempt_rt_sanity_check \
- vgpu_kvm_sanity_check \
- module_symvers_sanity_check
+ vgpu_kvm_sanity_check
+
+# In-tree build: Module.symvers is generated during the build, skip the check
 
 .PHONY: $(BUILD_SANITY_CHECKS)
 

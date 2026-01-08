@@ -6,6 +6,11 @@
 # To install the build kernel modules: run (as root) `make modules_install`
 ###########################################################################
 
+# In-tree kernel build: Kbuild sets KERNELRELEASE
+ifneq ($(KERNELRELEASE),)
+obj-y += kernel-open/
+else
+
 ###########################################################################
 # variables
 ###########################################################################
@@ -84,3 +89,5 @@ nvidia-modeset.clean:
 .PHONY: kernel-open.clean
 kernel-open.clean:
 	$(MAKE) -C kernel-open clean
+
+endif

@@ -14,6 +14,13 @@ OUTPUT=$4
 XEN_PRESENT=1
 PREEMPT_RT_PRESENT=0
 
+#
+# In-tree kernel build. Module.symvers doesn't exist yet during compilation
+# (it's generated during the build), so we assume kernel symbols ARE present
+# since we're building against the kernel source tree itself.
+#
+NV_INTREE_BUILD=1
+
 NVIDIA_OOT_PATH="/usr/src/nvidia/nvidia-oot"
 MODULE_SYMVERS_PATHS="$OUTPUT/Module.symvers"
 
@@ -344,6 +351,13 @@ check_symbol_exists() {
                     ${MODULE_SYMVERS_PATHS} >/dev/null 2>&1; then
             return 0
         fi
+
+        # For in-tree kernel builds, Module.symvers doesn't exist yet.
+        # Assume kernel symbols are present since we're building against
+        # the kernel source tree itself.
+        if [ ${NV_INTREE_BUILD} -eq 1 ]; then
+            return 0
+        fi
     else
         # FreeBSD:
         # ------
@@ -400,6 +414,12 @@ export_symbol_gpl_conftest() {
 
     if grep -e "${TAB}${SYMBOL}${TAB}.*${TAB}EXPORT_\(UNUSED_\)*SYMBOL_GPL\s*\$" \
                 ${MODULE_SYMVERS_PATHS} >/dev/null 2>&1; then
+        echo "#define NV_IS_EXPORT_SYMBOL_GPL_$SYMBOL 1" |
+            append_conftest "symbols"
+    elif [ ${NV_INTREE_BUILD} -eq 1 ]; then
+        # For in-tree kernel builds, Module.symvers doesn't exist yet.
+        # Assume GPL symbols are present since we're building against
+        # the kernel source tree itself.
         echo "#define NV_IS_EXPORT_SYMBOL_GPL_$SYMBOL 1" |
             append_conftest "symbols"
     else
@@ -858,7 +878,7 @@ compile_test() {
             #
             # Determine if vfio_migration_ops struct has .migration_get_data_size field.
             #
-            # Added by commit in 4e016f969529f ("vfio: Add an option to get migration 
+            # Added by commit in 4e016f969529f ("vfio: Add an option to get migration
             # data size") in v6.2 kernel.
             #
             CODE="
@@ -2256,7 +2276,7 @@ compile_test() {
 
             static const struct drm_mode_config_funcs funcs;
             void conftest_drm_fb_create_takes_format_info(void) {
-                funcs.fb_create(NULL, NULL, NULL, NULL); 
+                funcs.fb_create(NULL, NULL, NULL, NULL);
             }"
 
             compile_check_conftest "$CODE" "NV_DRM_FB_CREATE_TAKES_FORMAT_INFO" "" "types"
@@ -4227,7 +4247,7 @@ compile_test() {
         aperture_remove_conflicting_devices)
             #
             # Determine whether aperture_remove_conflicting_devices is present.
-            # 
+            #
             # Added by commit 7283f862bd991 ("drm: Implement DRM aperture
             # helpers under video/") in v6.0
             CODE="

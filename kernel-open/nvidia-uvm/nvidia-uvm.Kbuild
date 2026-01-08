@@ -13,7 +13,7 @@ NVIDIA_UVM_OBJECTS =
 include $(src)/nvidia-uvm/nvidia-uvm-sources.Kbuild
 NVIDIA_UVM_OBJECTS += $(patsubst %.c,%.o,$(NVIDIA_UVM_SOURCES))
 
-obj-m += nvidia-uvm.o
+obj-y += nvidia-uvm.o
 nvidia-uvm-y := $(NVIDIA_UVM_OBJECTS)
 
 NVIDIA_UVM_KO = nvidia-uvm/nvidia-uvm.ko
